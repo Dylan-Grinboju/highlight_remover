@@ -1,7 +1,5 @@
 # Remove highlight from PDFs
 
-# PDF Color Modifier Tool
-
 This tool processes PDF files in a selected folder and replaces yellow colors with white. The modified PDFs are saved in a new folder called `processed_PDFs`.
 
 ## Requirements
