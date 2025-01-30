@@ -1,4 +1,4 @@
-# PDF Processor
+# Remove highlight from PDFs
 
 This program performs a three-step process on PDF files in a selected folder:
 1. Converts each page of a PDF file into PNG images.
