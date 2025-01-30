@@ -1,55 +1,22 @@
 # Remove highlight from PDFs
 
-This program performs a three-step process on PDF files in a selected folder:
-1. Converts each page of a PDF file into PNG images.
-2. Processes the images by converting non-white/black pixels to white.
-3. Converts the processed images back into a single PDF file.
+# PDF Color Modifier Tool
 
-All processed PDFs will be saved in a `processed_PDFs` folder within the selected folder.
-
----
+This tool processes PDF files in a selected folder and replaces yellow colors with white. The modified PDFs are saved in a new folder called `processed_PDFs`.
 
 ## Requirements
-
-Make sure the following Python libraries are installed in your environment:
-
-1. [PyMuPDF](https://pymupdf.readthedocs.io/): For reading and processing PDFs.
-   ```bash
-   pip install pymupdf
-   ```
-
-2. [Pillow](https://pillow.readthedocs.io/): For image processing.
-   ```bash
-   pip install pillow
-   ```
-
-3. [Tkinter](https://docs.python.org/3/library/tkinter.html): For folder selection GUI (usually included in Python's standard library).
-
----
+- Python 3.x
+- PyMuPDF library (`pip install pymupdf`)
 
 ## How to Use
-
-1. **Run the Program**:
-   Execute the script. You can use the command:
-   ```bash
+1. Run the script:
+   ```
    python highlight_remover.py
    ```
+2. Select a folder with PDF files when prompted.
+3. The processed PDFs will be saved in a subfolder named `processed_PDFs` inside the selected folder.
 
-2. **Select Folder**:
-   A folder selection dialog will appear. Choose a folder containing the PDF files you want to process.
-
-3. **Processing**:
-   - The script will process each PDF file in the folder.
-   - For each PDF:
-     - It saves the extracted pages as temporary images in a subfolder (e.g., `temp_images_filename`).
-     - Processes the images (changes non-white/black pixels to white).
-     - Combines the processed images into a new PDF and saves it in a `processed_PDFs` folder.
-
-4. **Output**:
-   - Processed PDFs are saved as `processed_filename.pdf` in the `processed_PDFs` subfolder of the original folder.
-   - Temporary images are deleted after processing is complete.
-
----
+That's it! 🎉
 
 ## File Structure Example
 
@@ -70,17 +37,11 @@ Make sure the following Python libraries are installed in your environment:
         processed_example2.pdf
 ```
 
-Temporary image folders like `temp_images_example1` will be created during the process but removed after the PDF is generated.
-
 ---
 
 ## Notes
-
-- **Error Handling**: If no folder or PDFs are found, the script will prompt and safely exit without running any operations.
-- **Ensure Write Permissions**: Make sure the script has write access to the target folder for saving the `processed_PDFs` and any intermediate files.
-- **Large Input Files**: For PDFs with many pages, processing may take longer, depending on system capabilities.
-
----
+- The script replaces yellow (`1 1 0`) with white (`1 1 1`) in the PDF. It will not work (yet) for other shades of yellow.
+- Only works with accessible and non-password-protected PDFs.
 
 ## Disclaimers
 
