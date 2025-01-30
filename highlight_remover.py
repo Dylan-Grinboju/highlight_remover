@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
+import math
 
 
 def convert_pdf_to_images(pdf_path, output_folder, dpi=300):
@@ -19,16 +20,35 @@ def convert_pdf_to_images(pdf_path, output_folder, dpi=300):
     return images
 
 
-def process_image(image_path):
-    """Processes the image: converts non-white/black pixels to white."""
+
+def process_image(image_path, black_threshold=100):
+    """
+    Processes the image: converts all non-white/non-black pixels to white.
+    Pixels close enough to black (based on the given threshold) are not changed.
+    
+    Args:
+    - image_path (str): Path to the input image to process.
+    - black_threshold (int): The Euclidean distance threshold for considering a pixel as "close enough" to black.
+    """
+    def is_close_to_black(r, g, b, threshold):
+        """
+        Determines if a pixel is close to black within a given threshold.
+        Uses the Euclidean distance formula.
+        """
+        return math.sqrt(r**2 + g**2 + b**2) <= threshold
+
+    # Open the image and convert it to RGB mode
     image = Image.open(image_path).convert("RGB")
-    pixels = image.load()  # Load pixel-level access to the image
-    for y in range(image.size[1]):
-        for x in range(image.size[0]):
+    pixels = image.load()  # Get pixel-level access to the image
+
+    for y in range(image.size[1]):  # Loop over image rows (height)
+        for x in range(image.size[0]):  # Loop over image columns (width)
             r, g, b = pixels[x, y]
-            # Check if the pixel is not white or black
-            if (r, g, b) != (255, 255, 255) and (r, g, b) != (0, 0, 0):
+            # Check if pixel is neither white nor close enough to black
+            if (r, g, b) != (255, 255, 255) and not is_close_to_black(r, g, b, black_threshold):
                 pixels[x, y] = (255, 255, 255)  # Change to white
+
+    # Save the modified image back
     image.save(image_path)
 
 
