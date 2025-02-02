@@ -1,4 +1,4 @@
-# PDF Processing Tool
+# PDF Highlight Remover
 
 This is a Python-based tool for processing PDF files. It provides two main functionalities: 
 1. **Faster Program** - Modifies the colors in a PDF directly.
@@ -16,8 +16,8 @@ This is a Python-based tool for processing PDF files. It provides two main funct
 - Converts PDFs to images for detailed processing.
 - Processes each page by converting non-white, non-black pixels into white based on a defined threshold.
 - Reassembles processed images back into a single PDF.
-- Lowers the quality of the PDF!.
-- Takes a lot longer
+- Lowers the quality of the PDF!
+- Takes a lot longer.
 
 ---
 
