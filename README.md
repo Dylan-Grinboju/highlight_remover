@@ -1,20 +1,62 @@
-# Remove highlight from PDFs
+# PDF Processing Tool
 
-This tool processes PDF files in a selected folder and replaces yellow colors with white. The modified PDFs are saved in a new folder called `processed_PDFs`.
+This is a Python-based tool for processing PDF files. It provides two main functionalities: 
+1. **Faster Program** - Modifies the colors in a PDF directly.
+2. **Slower Program** - Converts PDF pages to images for pixel-level image processing before re-assembling them back into a PDF.
+
+---
+
+## Features
+
+### 1. Faster Program (Modify PDF Colors)
+- Replaces just yellow in the PDF with white directly using PDF streams.
+- Suitable for users looking for a quick solution.
+
+### 2. Slower Program (Page-by-Page Image Processing)
+- Converts PDFs to images for detailed processing.
+- Processes each page by converting non-white, non-black pixels into white based on a defined threshold.
+- Reassembles processed images back into a single PDF.
+- Lowers the quality of the PDF!.
+- Takes a lot longer
+
+---
 
 ## Requirements
-- Python 3.x
-- PyMuPDF library (`pip install pymupdf`)
+
+- Python 3.6+
+- Required Python libraries:
+  - `PyMuPDF` (`fitz`)
+  - `Pillow` (`PIL`)
+
+Install the dependencies using:
+```bash
+pip install PyMuPDF Pillow
+```
+
+---
 
 ## How to Use
+
 1. Run the script:
-   ```
+   ```bash
    python highlight_remover.py
    ```
-2. Select a folder with PDF files when prompted.
-3. The processed PDFs will be saved in a subfolder named `processed_PDFs` inside the selected folder.
 
-That's it! 🎉
+2. Select a folder containing the PDF files to process when prompted.
+
+3. Choose the program to run:
+   - **Faster Program**: Enter `f` and press Enter.
+   - **Slower Program**: Enter `s` and press Enter.
+
+4. The processed files will be saved in a new folder named `processed_PDFs` within the selected folder.
+
+---
+
+## Temporary Files
+
+The **Slower Program** creates temporary image files during processing. These files are automatically cleaned up once processing is complete.
+
+---
 
 ## File Structure Example
 
@@ -36,10 +78,6 @@ That's it! 🎉
 ```
 
 ---
-
-## Notes
-- The script replaces yellow (`1 1 0`) with white (`1 1 1`) in the PDF. It will not work (yet) for other shades of yellow.
-- Only works with accessible and non-password-protected PDFs.
 
 ## Disclaimers
 
