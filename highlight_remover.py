@@ -2,7 +2,7 @@ import fitz  # PyMuPDF
 from PIL import Image
 import os
 from tkinter import Tk
-from tkinter.filedialog import askdirectory
+from tkinter.filedialog import askdirectory, askopenfilename
 import math
 
 
@@ -40,23 +40,44 @@ def convert_images_to_pdf(images, output_pdf_path):
     pdf_images = [Image.open(img).convert("RGB") for img in images]
     pdf_images[0].save(output_pdf_path, save_all=True, append_images=pdf_images[1:])
 
-def slow_program(pdf_files, folder, processed_folder):
+
+def find_all_pdfs_recursive(root_folder):
+    """Recursively finds all PDF files in the folder and its subfolders.
+    Returns a list of tuples: (relative_path_from_root, full_path)
+    """
+    pdf_files = []
+    for root, dirs, files in os.walk(root_folder):
+        for file in files:
+            if file.lower().endswith(".pdf"):
+                full_path = os.path.join(root, file)
+                relative_path = os.path.relpath(full_path, root_folder)
+                pdf_files.append((relative_path, full_path))
+    return pdf_files
+
+def slow_program(pdf_files, root_folder, processed_root_folder):
     """Program 1: Converts PDFs to images, processes them, and re-creates new PDFs."""
 
+    for relative_path, full_path in pdf_files:
+        # Get the directory structure for the output
+        relative_dir = os.path.dirname(relative_path)
+        filename = os.path.basename(relative_path)
+        
+        # Create output directory structure
+        output_dir = os.path.join(processed_root_folder, relative_dir) if relative_dir else processed_root_folder
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        output_pdf_path = os.path.join(output_dir, f"processed_{filename}")
+        output_image_folder = os.path.join(root_folder, f"temp_images_{os.path.splitext(filename)[0]}_{hash(full_path) % 10000}")
 
-    for pdf_file in pdf_files:
-        input_pdf_path = os.path.join(folder, pdf_file)
-        output_pdf_path = os.path.join(processed_folder, f"processed_{pdf_file}")
-        output_image_folder = os.path.join(folder, f"temp_images_{os.path.splitext(pdf_file)[0]}")
-
-        print(f"Processing: {pdf_file}")
+        print(f"Processing: {relative_path}")
 
         if not os.path.exists(output_image_folder):
             os.makedirs(output_image_folder)
 
         try:
             print("  Converting PDF to images...")
-            images = convert_pdf_to_images(input_pdf_path, output_image_folder)
+            images = convert_pdf_to_images(full_path, output_image_folder)
             print("  Processing images...")
             for image in images:
                 process_image(image)
@@ -70,7 +91,7 @@ def slow_program(pdf_files, folder, processed_folder):
                 os.remove(os.path.join(output_image_folder, file))
             os.rmdir(output_image_folder)
 
-    print(f"All processed PDFs are saved in the folder: {processed_folder}")
+    print(f"All processed PDFs are saved in the folder: {processed_root_folder}")
 
 
 def modify_pdf_colors(input_path, output_path):
@@ -87,49 +108,109 @@ def modify_pdf_colors(input_path, output_path):
     doc.close()
 
 
-def fast_program(pdf_files, folder, processed_folder):
+def fast_program(pdf_files, root_folder, processed_root_folder):
     """Program 2 execution: Modifies PDF colors."""
 
-    for pdf_file in pdf_files:
-        input_pdf_path = os.path.join(folder, pdf_file)
-        output_pdf_path = os.path.join(processed_folder, f"processed_{pdf_file}")
-        print(f"Processing: {pdf_file}")
-        modify_pdf_colors(input_pdf_path, output_pdf_path)
+    for relative_path, full_path in pdf_files:
+        # Get the directory structure for the output
+        relative_dir = os.path.dirname(relative_path)
+        filename = os.path.basename(relative_path)
+        
+        # Create output directory structure
+        output_dir = os.path.join(processed_root_folder, relative_dir) if relative_dir else processed_root_folder
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        output_pdf_path = os.path.join(output_dir, f"processed_{filename}")
+        print(f"Processing: {relative_path}")
+        modify_pdf_colors(full_path, output_pdf_path)
         print(f"Processed PDF saved as: {output_pdf_path}")
 
-    print(f"All processed PDFs are saved in the folder: {processed_folder}")
+    print(f"All processed PDFs are saved in the folder: {processed_root_folder}")
 
 
 def main():
     """Main function to select which program to run."""
     root = Tk()
     root.withdraw()
-    print("Please choose a folder containing PDF files.")
-    folder = askdirectory(title="Select Folder Containing PDFs")
+    
+    # Ask user whether to select a file or folder
+    print("What would you like to process?")
+    print("  '1' - Single PDF file")
+    print("  '2' - Folder (will search recursively in all subfolders)")
+    selection_type = input("Enter your choice (1 or 2): ").strip()
+    
+    pdf_files = []
+    root_folder = ""
+    processed_root_folder = ""
+    
+    if selection_type == '1':
+        # Single file selection
+        print("Please select a PDF file to process.")
+        pdf_file_path = askopenfilename(
+            title="Select PDF File",
+            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+        )
+        
+        if not pdf_file_path:
+            print("No file selected. Exiting...")
+            return
+        
+        if not pdf_file_path.lower().endswith('.pdf'):
+            print("Selected file is not a PDF. Exiting...")
+            return
+        
+        # Set up single file processing
+        root_folder = os.path.dirname(pdf_file_path)
+        filename = os.path.basename(pdf_file_path)
+        relative_path = filename  # For single file, relative path is just the filename
+        pdf_files = [(relative_path, pdf_file_path)]
+        
+        # Create processed folder next to the original file
+        processed_root_folder = os.path.join(root_folder, "processed_PDFs")
+        if not os.path.exists(processed_root_folder):
+            os.makedirs(processed_root_folder)
+        
+        print(f"Selected file: {filename}")
+        
+    elif selection_type == '2':
+        # Folder selection (original functionality)
+        print("Please choose a root folder containing PDF files (will search recursively in all subfolders).")
+        root_folder = askdirectory(title="Select Root Folder Containing PDFs")
 
-    if not folder:
-        print("No folder selected. Exiting...")
+        if not root_folder:
+            print("No folder selected. Exiting...")
+            return
+
+        # Recursively find all PDF files
+        print("Scanning for PDF files recursively...")
+        pdf_files = find_all_pdfs_recursive(root_folder)
+
+        if not pdf_files:
+            print("No PDF files found in the selected folder or its subfolders.")
+            return
+
+        print(f"Found {len(pdf_files)} PDF file(s) to process across all subfolders.")
+        
+        # Create processed folder in the root directory
+        processed_root_folder = os.path.join(root_folder, "processed_PDFs")
+        if not os.path.exists(processed_root_folder):
+            os.makedirs(processed_root_folder)
+    
+    else:
+        print("Invalid choice. Exiting...")
         return
-
-    pdf_files = [f for f in os.listdir(folder) if f.lower().endswith(".pdf")]
-
-    if not pdf_files:
-        print("No PDF files found in the selected folder.")
-        return
-
-    print(f"Found {len(pdf_files)} PDF file(s) to process.")
-    processed_folder = os.path.join(folder, "processed_PDFs")
-    if not os.path.exists(processed_folder):
-        os.makedirs(processed_folder)
-    print("Choose which program to run:")
+    
+    # Choose processing method
+    print("\nChoose which program to run:")
     print("  'f' - Faster Program: Modify PDF colors.")
     print("  's' - Slower Program: Process PDFs page-by-page with image processing.")
     choice = input("Enter your choice ('f' or 's'): ").strip().lower()
 
     if choice == 'f':
-        fast_program(pdf_files, folder, processed_folder)
+        fast_program(pdf_files, root_folder, processed_root_folder)
     elif choice == 's':
-        slow_program(pdf_files, folder, processed_folder)
+        slow_program(pdf_files, root_folder, processed_root_folder)
     else:
         print("Invalid choice. Exiting...")
 
